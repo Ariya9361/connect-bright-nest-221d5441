@@ -37,6 +37,11 @@ const Index = () => {
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
+            <Button asChild variant="outline" size="lg" className="gap-2">
+              <Link to="/dashboard/arya">
+                Open Dashboard
+              </Link>
+            </Button>
           </div>
 
           {/* Features */}
