@@ -42,6 +42,30 @@ export const useProfileByUsername = (username: string | undefined) => {
   });
 };
 
+// Fetch profile by user_id (auth user)
+export const useProfileByUserId = (userId: string | undefined) => {
+  return useQuery({
+    queryKey: ["profile", "user", userId],
+    queryFn: async (): Promise<Profile | null> => {
+      if (!userId) return null;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!userId,
+  });
+};
+
 // Fetch all profiles (for demo/admin purposes)
 export const useAllProfiles = () => {
   return useQuery({

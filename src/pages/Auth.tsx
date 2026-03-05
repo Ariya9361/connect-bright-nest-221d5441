@@ -34,7 +34,7 @@ const Auth = () => {
         const { error } = await signIn(email, password);
         if (error) throw error;
         toast({ title: "Welcome back!", description: "You've been signed in." });
-        navigate("/");
+        navigate("/dashboard");
       } else {
         const { error } = await signUp(email, password);
         if (error) throw error;
