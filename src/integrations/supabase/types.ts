@@ -114,7 +114,6 @@ export type Database = {
           display_name: string
           id: string
           updated_at: string
-          user_id: string | null
           username: string
         }
         Insert: {
@@ -124,7 +123,6 @@ export type Database = {
           display_name: string
           id?: string
           updated_at?: string
-          user_id?: string | null
           username: string
         }
         Update: {
@@ -134,7 +132,6 @@ export type Database = {
           display_name?: string
           id?: string
           updated_at?: string
-          user_id?: string | null
           username?: string
         }
         Relationships: []
@@ -144,7 +141,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      owns_profile: { Args: { _profile_id: string }; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

@@ -1,5 +1,5 @@
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { useProfileByUsername } from "@/hooks/useProfile";
 import { useLinksByProfileId } from "@/hooks/useLinks";
 import { ProfileEditor } from "@/components/dashboard/ProfileEditor";
 import { LinkEditor } from "@/components/dashboard/LinkEditor";
@@ -9,19 +9,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ExternalLink, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useProfileByUserId } from "@/hooks/useProfile";
 
 const Dashboard = () => {
+  const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const { data: profile, isLoading: profileLoading } = useProfileByUserId(user?.id);
+  const { data: profile, isLoading: profileLoading } = useProfileByUsername(username);
   const { data: links = [], isLoading: linksLoading } = useLinksByProfileId(profile?.id);
 
   const handleCopyLink = () => {
-    if (!profile) return;
-    const url = `${window.location.origin}/u/${profile.username}`;
+    const url = `${window.location.origin}/u/${username}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast({
@@ -52,7 +50,7 @@ const Dashboard = () => {
           <div className="text-6xl">🔗</div>
           <h1 className="text-2xl font-bold">Profile not found</h1>
           <p className="text-muted-foreground">
-            No profile linked to your account yet.
+            The profile <span className="font-mono text-primary">@{username}</span> doesn't exist.
           </p>
           <Button onClick={() => navigate("/")}>Go Home</Button>
         </div>
@@ -62,13 +60,15 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Subtle gradient background */}
       <div className="fixed inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
 
       <div className="relative max-w-4xl mx-auto p-6">
+        {/* Header */}
         <header className="flex items-center justify-between mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -85,7 +85,7 @@ const Dashboard = () => {
               Copy Link
             </Button>
             <Button asChild size="sm">
-              <Link to={`/u/${profile.username}`} target="_blank">
+              <Link to={`/u/${username}`} target="_blank">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Public Hub
               </Link>
@@ -93,19 +93,23 @@ const Dashboard = () => {
           </div>
         </header>
 
+        {/* Dashboard Title */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your link hub <span className="text-primary font-mono">@{profile.username}</span>
+            Manage your link hub <span className="text-primary font-mono">@{username}</span>
           </p>
         </div>
 
+        {/* Main Grid */}
         <div className="grid md:grid-cols-2 gap-6">
+          {/* Left Column */}
           <div className="space-y-6">
             <ProfileEditor profile={profile} />
             <AnalyticsCard profileId={profile.id} />
           </div>
 
+          {/* Right Column */}
           <div>
             {linksLoading ? (
               <Skeleton className="h-[500px]" />

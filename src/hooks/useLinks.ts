@@ -89,10 +89,7 @@ export const useCreateLink = () => {
 
   return useMutation({
     mutationFn: async (link: LinkCreate) => {
-      // Validate URL protocol
-      if (!/^https?:\/\//i.test(link.url)) {
-        throw new Error("Only http:// and https:// URLs are allowed.");
-      }
+      // Get max sort order
       const { data: existingLinks } = await supabase
         .from("links")
         .select("sort_order")
@@ -147,10 +144,6 @@ export const useUpdateLink = () => {
       profileId: string;
       updates: LinkUpdate;
     }) => {
-      // Validate URL protocol if URL is being updated
-      if (updates.url && !/^https?:\/\//i.test(updates.url)) {
-        throw new Error("Only http:// and https:// URLs are allowed.");
-      }
       const { data, error } = await supabase
         .from("links")
         .update(updates)
