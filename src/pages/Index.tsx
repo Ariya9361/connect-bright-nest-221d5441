@@ -1,14 +1,36 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Zap, BarChart3, Link2 } from "lucide-react";
+import { ArrowRight, Zap, BarChart3, Link2, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const { user, signOut, loading } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Gradient background */}
       <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
+
+      {/* Top nav */}
+      <nav className="relative flex items-center justify-end p-4 max-w-2xl mx-auto">
+        {!loading && (
+          user ? (
+            <Button variant="ghost" size="sm" className="gap-2" onClick={() => signOut()}>
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" className="gap-2" asChild>
+              <Link to="/auth">
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </Link>
+            </Button>
+          )
+        )}
+      </nav>
       
-      <main className="relative container max-w-2xl mx-auto px-4 py-20">
+      <main className="relative container max-w-2xl mx-auto px-4 py-12">
         <div className="flex flex-col items-center text-center gap-8">
           {/* Logo / Brand */}
           <div className="animate-fade-up opacity-0" style={{ animationFillMode: 'forwards' }}>
