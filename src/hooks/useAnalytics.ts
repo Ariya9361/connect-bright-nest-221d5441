@@ -22,7 +22,6 @@ export const useProfileAnalytics = (profileId: string | undefined) => {
     queryFn: async (): Promise<AnalyticsSummary | null> => {
       if (!profileId) return null;
 
-      // Get links with click counts
       const { data: links, error: linksError } = await supabase
         .from("links")
         .select("id, title, clicks")
@@ -30,11 +29,10 @@ export const useProfileAnalytics = (profileId: string | undefined) => {
         .order("clicks", { ascending: false });
 
       if (linksError) {
-        console.error("Error fetching links for analytics:", linksError);
+        if (import.meta.env.DEV) console.error("Error fetching links for analytics:", linksError);
         throw linksError;
       }
 
-      // Get recent click events
       const { data: recentClicks, error: analyticsError } = await supabase
         .from("link_analytics")
         .select("link_id, clicked_at")
@@ -43,7 +41,7 @@ export const useProfileAnalytics = (profileId: string | undefined) => {
         .limit(50);
 
       if (analyticsError) {
-        console.error("Error fetching analytics:", analyticsError);
+        if (import.meta.env.DEV) console.error("Error fetching analytics:", analyticsError);
       }
 
       const totalClicks = links?.reduce((sum, link) => sum + (link.clicks || 0), 0) || 0;
@@ -61,17 +59,14 @@ export const useProfileAnalytics = (profileId: string | undefined) => {
 
 // Hook for future rule engine integration
 export const useRuleEngineHooks = (profileId: string | undefined) => {
-  // Placeholder for time-based rules
   const getTimeBasedPriority = () => {
     const hour = new Date().getHours();
-    // Morning: 6-12, Afternoon: 12-18, Evening: 18-24, Night: 0-6
     if (hour >= 6 && hour < 12) return "morning";
     if (hour >= 12 && hour < 18) return "afternoon";
     if (hour >= 18 && hour < 24) return "evening";
     return "night";
   };
 
-  // Placeholder for click-based promotion
   const getClickBasedOrder = (links: { id: string; clicks: number }[]) => {
     return [...links].sort((a, b) => b.clicks - a.clicks).map((l) => l.id);
   };

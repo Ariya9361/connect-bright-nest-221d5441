@@ -36,7 +36,6 @@ export interface LinkUpdate {
 export const useLinksByProfileId = (profileId: string | undefined) => {
   const queryClient = useQueryClient();
 
-  // Set up realtime subscription
   useEffect(() => {
     if (!profileId) return;
 
@@ -73,7 +72,7 @@ export const useLinksByProfileId = (profileId: string | undefined) => {
         .order("sort_order", { ascending: true });
 
       if (error) {
-        console.error("Error fetching links:", error);
+        if (import.meta.env.DEV) console.error("Error fetching links:", error);
         throw error;
       }
 
@@ -89,10 +88,10 @@ export const useCreateLink = () => {
 
   return useMutation({
     mutationFn: async (link: LinkCreate) => {
-      // Validate URL protocol
       if (!/^https?:\/\//i.test(link.url)) {
         throw new Error("Only http:// and https:// URLs are allowed.");
       }
+
       const { data: existingLinks } = await supabase
         .from("links")
         .select("sort_order")
@@ -122,8 +121,7 @@ export const useCreateLink = () => {
         description: "Your new link has been created.",
       });
     },
-    onError: (error) => {
-      console.error("Error creating link:", error);
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to create link. Please try again.",
@@ -147,10 +145,10 @@ export const useUpdateLink = () => {
       profileId: string;
       updates: LinkUpdate;
     }) => {
-      // Validate URL protocol if URL is being updated
       if (updates.url && !/^https?:\/\//i.test(updates.url)) {
         throw new Error("Only http:// and https:// URLs are allowed.");
       }
+
       const { data, error } = await supabase
         .from("links")
         .update(updates)
@@ -168,8 +166,7 @@ export const useUpdateLink = () => {
         description: "Your changes have been saved.",
       });
     },
-    onError: (error) => {
-      console.error("Error updating link:", error);
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to update link. Please try again.",
@@ -203,8 +200,7 @@ export const useDeleteLink = () => {
         description: "The link has been removed.",
       });
     },
-    onError: (error) => {
-      console.error("Error deleting link:", error);
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to delete link. Please try again.",
@@ -226,7 +222,6 @@ export const useReorderLinks = () => {
       profileId: string;
       linkIds: string[];
     }) => {
-      // Update each link with new sort order
       const updates = linkIds.map((id, index) => ({
         id,
         sort_order: index + 1,
@@ -246,8 +241,7 @@ export const useReorderLinks = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["links", data.profileId] });
     },
-    onError: (error) => {
-      console.error("Error reordering links:", error);
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to reorder links. Please try again.",
@@ -257,7 +251,7 @@ export const useReorderLinks = () => {
   });
 };
 
-// Record link click (analytics) - simplified version
+// Record link click (analytics)
 export const useRecordClick = () => {
   const queryClient = useQueryClient();
 
@@ -269,25 +263,12 @@ export const useRecordClick = () => {
       linkId: string;
       profileId: string;
     }) => {
-      // Get current clicks
-      const { data: link } = await supabase
-        .from("links")
-        .select("clicks")
-        .eq("id", linkId)
-        .single();
-
-      // Update clicks
-      await supabase
-        .from("links")
-        .update({ clicks: (link?.clicks || 0) + 1 })
-        .eq("id", linkId);
-
-      // Record in analytics table
+      // Record in analytics table (trigger validates link-profile relationship)
       await supabase.from("link_analytics").insert({
         link_id: linkId,
         profile_id: profileId,
-        user_agent: navigator.userAgent,
-        referrer: document.referrer || null,
+        user_agent: (navigator.userAgent || "").slice(0, 512),
+        referrer: (document.referrer || "").slice(0, 512) || null,
       });
 
       return { linkId, profileId };
@@ -295,9 +276,8 @@ export const useRecordClick = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["links", data.profileId] });
     },
-    onError: (error) => {
-      console.warn("Click tracking failed:", error);
+    onError: () => {
+      // Silent fail for click tracking
     },
   });
 };
-
