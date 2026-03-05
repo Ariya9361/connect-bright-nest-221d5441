@@ -43,17 +43,6 @@ export const useAvatarUpload = () => {
     file: File,
     profileId: string
   ): Promise<string | null> => {
-    // Verify the current user owns this profile
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || user.id !== profileId) {
-      toast({
-        title: "Upload failed",
-        description: "You can only update your own avatar.",
-        variant: "destructive",
-      });
-      return null;
-    }
-
     // Validate file
     const validationError = validateFile(file);
     if (validationError) {
@@ -130,20 +119,19 @@ export const useAvatarUpload = () => {
 
       return publicUrl;
     } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error("Avatar upload error:", error);
-      }
+      console.error("Avatar upload error:", error);
+      const errorMessage = error.message || "Failed to upload avatar";
       
       setUploadState({
         isUploading: false,
         progress: 0,
         previewUrl: null,
-        error: "Failed to upload avatar",
+        error: errorMessage,
       });
 
       toast({
         title: "Upload failed",
-        description: "Failed to upload avatar. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
 

@@ -32,7 +32,7 @@ export const useProfileByUsername = (username: string | undefined) => {
         .maybeSingle();
 
       if (error) {
-        if (import.meta.env.DEV) console.error("Error fetching profile:", error);
+        console.error("Error fetching profile:", error);
         throw error;
       }
 
@@ -56,7 +56,7 @@ export const useProfileByUserId = (userId: string | undefined) => {
         .maybeSingle();
 
       if (error) {
-        if (import.meta.env.DEV) console.error("Error fetching profile:", error);
+        console.error("Error fetching profile:", error);
         throw error;
       }
 
@@ -77,7 +77,7 @@ export const useAllProfiles = () => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        if (import.meta.env.DEV) console.error("Error fetching profiles:", error);
+        console.error("Error fetching profiles:", error);
         throw error;
       }
 
@@ -108,7 +108,7 @@ export const useUpdateProfile = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
       toast({
@@ -116,7 +116,8 @@ export const useUpdateProfile = () => {
         description: "Your changes have been saved.",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error updating profile:", error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -154,6 +155,7 @@ export const useCreateProfile = () => {
       });
     },
     onError: (error: any) => {
+      console.error("Error creating profile:", error);
       toast({
         title: "Error",
         description: error.message?.includes("duplicate")
